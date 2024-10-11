@@ -6,46 +6,6 @@
 
 #define memory_size 1024
 
-//Put the entire FILE into memory to read
-int32_t *cpuCreateMemory(FILE *program, size_t stackCapacity, int32_t **stackBottom){
-
-    int32_t *memoryPointer = malloc(memory_size*sizeof(int32_t));
-    int32_t *memoryPointerCopy;
-
-    size_t allocatedBlocks = 1;
-    uint32_t actualIndex = 0;
-    uint32_t maxIndex = 1023;
-    int32_t input = 0;
-    int32_t instruction[4] = { 0 };
-    int8_t counter = 3;
-
-    while((input = fgetc(program)) != EOF){
-        instruction[counter] = input;
-        counter--;
-        if (counter < 0){
-            if(maxIndex < actualIndex){
-                //32 hexcodes limit right now
-                // TODO: increase this size
-            }
-
-            for(int8_t i = 0; i<4; i++){
-                *(memoryPointer + actualIndex) = (*(memoryPointer + actualIndex) << 8) | (instruction[i] & 0xff);
-                /*
-                (instruction[i] & 0xff): takes only 2bytes of data, nullifies other if present
-                (*(memoryPointer + actualIndex) << 8): calculates the address of memory at which data should be stored and creates 8 bits(2 bytes) of space
-                */
-            }
-            actualIndex++;
-            counter = 3;
-        }
-    }
-
-    //Check for memory left and stack size
-
-    *stackBottom = memoryPointer + maxIndex;
-    memset(memoryPointer + actualIndex, 0, (maxIndex - actualIndex + 1) * sizeof(int32_t));
-    return memoryPointer;
-}
 
 static void resetRegisters(struct cpu *cpu){
     cpu->A = 0;
@@ -181,10 +141,7 @@ static int operationInstruction(struct cpu *cpu, char operand){
         break;
     }
     cpu->A = value;
-
-#ifdef BONUS_JMP
     cpu->result = value;
-#endif
 
     cpu->instructionPointer += 2;
     return 1;

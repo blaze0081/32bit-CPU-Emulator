@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "compiler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,30 +38,35 @@ static void state(struct cpu *cpu){
 }
 
 
-int main(int argc, char *argv[]){
-    //compile as: gcc -o cpu main.c cpu.c
-    // run as: ./cpu progrma.bin
-    if(argc != 2){
-        printf("Invalid arguments");
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <program.asm>\n", argv[0]);
         return 1;
     }
 
-    size_t stackCapacity = 256; //initail stack size
-    FILE *fptr;
-    fptr = fopen(argv[1], "rb");
+    const char* filename = argv[1];
+    size_t stackCapacity = 256; // initial stack size
 
-    int32_t *stackPtr;
-    int32_t *memory = cpuCreateMemory(fptr, stackCapacity, &stackPtr);
+    int32_t *memory = malloc(1024 * sizeof(int32_t));
+
+    // Compile the program
+    CompiledProgram compiledProgram = compilerASMtoBinary(filename);
+
+    // Copy program into memory
+    memcpy(memory, compiledProgram.program, compiledProgram.size);
+
+    // Set stack pointer to end of memory
+    int32_t *stackPtr = memory + 1023;  // Point to last element
+
     struct cpu cp;
     cpuCreate(&cp, memory, stackPtr, stackCapacity);
 
-    //cpu run
+    // CPU run
     cpuRun(&cp, INT_MAX);
     state(&cp);
 
-    //memory management
-    fclose(fptr);
+    // Memory management
     cpuDestroy(&cp);
+    free(memory);
     return 0;
-
 }
