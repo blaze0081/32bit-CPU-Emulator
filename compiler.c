@@ -26,7 +26,8 @@ enum Instructions {
     PUT = 15,
     SWAP = 16,
     PUSH = 17,
-    POP = 18
+    POP = 18,
+    CMP = 19
 };
 
 // Convert register name to number
@@ -59,6 +60,7 @@ int get_opcode(const char *instr) {
     if (strcmp(instr, "swap") == 0) return SWAP;
     if (strcmp(instr, "push") == 0) return PUSH;
     if (strcmp(instr, "pop") == 0) return POP;
+    if (strcmp(instr, "cmp") == 0) return CMP;
     return -1;
 }
 

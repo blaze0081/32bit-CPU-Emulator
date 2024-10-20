@@ -183,6 +183,96 @@ static int movInstruction(struct cpu *cpu)
     return 1;
 }
 
+static int incInstruction(struct cpu *cpu){
+    int32_t registerIndex = next32Bits(cpu, 1);
+    if (cpuStatus(cpu) == cpuInvalidAddress) {
+        return 0;
+    }
+
+    if (registerIndex < 0 || registerIndex > 3) {
+        cpu->status = cpuIllegalOperand;
+        return 0;
+    }
+
+    int32_t registerInValue = getRegister(cpu, registerIndex);
+    registerInValue++;
+    setRegister(cpu, registerIndex, registerInValue);
+    cpu->instructionPointer += 2;
+    return 1;
+
+}
+
+static int decInstruction(struct cpu *cpu){
+    int32_t registerIndex = next32Bits(cpu, 1);
+    if (cpuStatus(cpu) == cpuInvalidAddress) {
+        return 0;
+    }
+
+    if (registerIndex < 0 || registerIndex > 3) {
+        cpu->status = cpuIllegalOperand;
+        return 0;
+    }
+
+    int32_t registerInValue = getRegister(cpu, registerIndex);
+    registerInValue--;
+    setRegister(cpu, registerIndex, registerInValue);
+    cpu->instructionPointer += 2;
+    return 1;
+
+}
+
+static int inInstruction(struct cpu *cpu){
+    int32_t registerIndex = next32Bits(cpu, 1);
+    if (cpuStatus(cpu) == cpuInvalidAddress) {
+        return 0;
+    }
+
+    if (registerIndex < 0 || registerIndex > 3) {
+        cpu->status = cpuIllegalOperand;
+        return 0;
+    }
+
+    int64_t resisterInValue = 0;
+    scanf("%ld", &resisterInValue);
+    setRegister(cpu, registerIndex, resisterInValue);
+    cpu->instructionPointer += 2;
+    return 1;
+}
+
+static int outInstruction(struct cpu *cpu){
+    int32_t registerIndex = next32Bits(cpu, 1);
+    if (cpuStatus(cpu) == cpuInvalidAddress) {
+        return 0;
+    }
+
+    if (registerIndex < 0 || registerIndex > 3) {
+        cpu->status = cpuIllegalOperand;
+        return 0;
+    }
+
+    int32_t registerInValue = getRegister(cpu, registerIndex);
+    printf("%d\n", registerInValue);
+    cpu->instructionPointer += 2;
+    return 1;
+}
+
+static int cmpInstruction(struct cpu *cpu){
+    int32_t registerIndex1 = next32Bits(cpu, 1);
+    int32_t registerIndex2 = next32Bits(cpu, 2);
+    if (cpuStatus(cpu) == cpuInvalidAddress) {
+        return 0;
+    }
+
+    if (registerIndex1 < 0 || registerIndex1 > 4 || registerIndex2 < 0 || registerIndex2 > 4) {
+        cpu->status = cpuIllegalOperand;
+        return 0;
+    }
+
+    cpu->A = getRegister(cpu, registerIndex1) - getRegister(cpu, registerIndex2);
+    cpu->instructionPointer += 3;
+    return 1;
+}
+
 enum instructionKeyWords
 {
     nope,
@@ -249,6 +339,16 @@ int cpuStep(struct cpu *cpu)
         return operationInstruction(cpu, '/');
     case mov:
         return movInstruction(cpu);
+    case inc:
+        return incInstruction(cpu);
+    case dec:
+        return decInstruction(cpu);
+    case in:
+        return inInstruction(cpu);
+    case out:
+        return outInstruction(cpu);
+    case cmp:
+        return cmpInstruction(cpu);
     default:
         cpu->status = cpuIllegalInstruction;
         return 0;
